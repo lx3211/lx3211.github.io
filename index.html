@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Hello guys!</title>
+    <link rel="stylesheet" href="final.css">
+  </head>
+
+  <body background="welcome.jpg">
+    <!-- css特效：會旋轉的大喵喵怪 -->
+    <div id="rotate">
+      <center>
+        <a href = "https://www.ncu.edu.tw/tw/" target = "_blank"><img src="challenge.png"></a>
+      </center>
+    </div>
+
+    <div style="background-color: #EBD8C9">
+      <img src="main.png">
+      <br>
+      <button onclick="welcome()">尼豪</button>
+      <p id="welcome"></p>
+      <!--css特效：ul的背景顏色  -->
+      <ul>
+        <!--css特效：按下week1會變色、week2的字體顏色、經過week3會變色 -->
+        <li id="task1"><a href="https://www.ibm.com/cloud/learn/neural-networks" target="_blank">Week1</a></li>
+        <button type="button" onclick="finished()">Finished!</button>
+        <li id="task2">Week2</li>
+        <li id="task3">Week3</li>
+        <li >Week4</li>
+      </ul>
+    </div>
+
+    <!--css特效：隱藏起來的區塊文字  -->
+    <div id="invi" style="background-color: hsl(27, 35%, 68%)">
+       ~這裡什麼都沒有...
+      <p>就說了什麼都沒有ˊˋ</p>
+    </div>
+
+    <div style="background-color:#fffaf4">
+      <table border ="1">
+        <caption>學分統計</caption>
+        <colgroup>
+          <col style="background-color:#7b8b6f">
+          <col style="background-color:#b5c4b1">
+          <col span="2" style="background-color:#e0e5df">
+        </colgroup>
+        <tr>
+          <th>項目</th>
+          <th>總需</th>
+          <th>已修</th>
+          <th>尚須</th>
+        </tr>
+        <tr>
+          <td>必修</td>
+          <td>98</td>
+        </tr>
+        <tr>
+          <td>通識</td>
+          <td>14</td>
+          <td>11</td>
+          <td>3</td>
+        </tr>
+        <tr>
+          <td>系上選修</td>
+          <td>14</td>
+          <td>14</td>
+          <td>0</td>
+        </tr>
+        <tr>
+          <td>其他</td>
+          <td>16</td>
+          <td>7</td>
+          <td>9</td>
+        </tr>
+        <tr>
+          <td>體育</td>
+          <td>3堂</td>
+          <td>1堂</td>
+          <td>2堂</td>
+        </tr>
+      </table>
+    </div>
+
+    <div style="background-color:rgb(212, 236, 237)">
+      <h2>來玩啊！</h2>
+      <p id="game">Now loading...</p>
+      <button type="button" onclick="game()">線上撲克</button>
+    </div>
+
+    <script>
+      function finished(){
+        document.getElementById("task1").innerHTML="Week1:Done"
+      }
+      function game(){
+        var msg;
+        if (confirm("作出決定！你要梭哈嗎？")){
+          msg="電腦贏了，你的錢包空了"
+        }else{
+          msg="網路斷線，你的錢包空了"
+        }
+        document.getElementById("game").innerHTML = msg;
+      }
+      function welcome() {
+        var msg;
+        var user_name = prompt("請輸入名字：","嘻嘻");
+        if(user_name==null||user_name==""){
+          msg="Invalid Input";
+        }else{
+          msg="嗨! "+user_name+", 歡迎來到喵喵怪的世界！！！"+Date()
+        }
+        document.getElementById("welcome").innerHTML=msg;
+      }
+    </script>
+<!--
+                       ___====-_  _-====___
+                 _--^^^     //      \\     ^^^--_
+              _-^          // (    ) \\          ^-_
+             -            //  |\^^/|  \\            -
+           _/            //   (@::@)   \\            \_
+          /             ((     \\//     ))             \
+         -               \\    (oo)    //               -
+        -                 \\  / VV \  //                 -
+       -                   \\/      \//                   -
+      _ /|          /\      (   /\   )      /\          |\ _
+      |/ | /\ /\ /\/  \ /\  \  |  |  /  /\ /  \/\ /\ /\ | \|
+      `  |/  V  V  `   V  \ \| |  | |/ /  V   '  V  V  \|  '
+         `   `  `      `   / | |  | | \   '      '  '   '
+                          (  | |  | |  )
+                         __\ | |  | | /__
+                        (vvv(VVV)(VVV)vvv)
+                        神獸保佑，程式碼沒Bug!
+ -->
+
+  </body>
+</html>
