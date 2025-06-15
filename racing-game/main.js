@@ -1,12 +1,11 @@
-// 📦 完整版本：加入物件道路集中與減速判斷 + 所有函式整合
-
+// Racing Game using Three.js
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.module.js';
 
 let scene, camera, renderer;
 let car;
 let keys = {};
 let angle = 0;
-let baseSpeed = 0.6;
+let baseSpeed = 2;
 let score = 0;
 let trees = [], coins = [], rocks = [];
 let gameOver = false;
@@ -14,8 +13,16 @@ let finished = false;
 
 const ROAD_BOUND = 20;
 const MAP_WIDTH = 200;
-const MAP_LENGTH = 600;
+const MAP_LENGTH = 1000;
 const END_LINE_Z = MAP_LENGTH / 2 - 5;
+const TREE_RATIO = 0.10; // 每 100 長度放 7 棵樹
+const ROCK_RATIO = 0.05; // 每 100 長度放 5 顆石頭
+const COIN_RATIO = 0.1; // 每 100 長度放 10 枚金幣
+const TREE_onROAD_RATIO = 0.6; // 60% 機率在道路上
+const ROCK_onROAD_RATIO = 0.5; // 50% 機率在道路上
+const COIN_onROAD_RATIO = 0.7; // 70% 機率在道路上
+const COIN_SCORE = 10;
+const ROCK_SCORE = 30;
 
 const scoreDisplay = document.getElementById("score");
 const gameOverPanel = document.createElement("div");
@@ -50,11 +57,11 @@ startPanel.style.alignItems = "center";
 startPanel.style.zIndex = "10";
 startPanel.style.justifyContent = "center";
 startPanel.style.flexDirection = "column";
-startPanel.innerHTML = `<h1>🏎️ 賽車遊戲</h1><h3 style='margin: 10px 0;'>使用方向鍵操作</h3><p style='font-size: 0.6em; max-width: 80%; line-height: 1.5;'>
+startPanel.innerHTML = `<h1>🏎️ 賽車遊戲</h1><h3 style='margin: 10px 0;'>使用方向鍵操作</h3><p style="font-size: 0.6em; max-width: 80%; line-height: 1.5; text-align: left;">
   🎯 遊戲目標：操控賽車穿越彎道抵達終點<br>
   🌲 撞到樹會直接結束遊戲<br>
-  💣 撞到石頭會扣 5 分並重新生成位置<br>
-  💰 吃到金幣可獲得 10 分<br>
+  💣 撞到石頭會扣 ${ROCK_SCORE} 分並重新生成位置<br>
+  💰 吃到金幣可獲得 ${COIN_SCORE} 分<br>
   🛣️ 開出柏油路速度會降低
 </p><button id='start-button' style='font-size: 1em; padding: 10px 20px; cursor: pointer;'>開始遊戲</button>`;startPanel.style.fontSize = "2em";
 startPanel.style.textAlign = "center";
@@ -94,11 +101,15 @@ function init() {
   scene.add(ground);
 
   window.roadPoints = [];
-for (let i = 0; i < 60; i++) {
-  const z = -MAP_LENGTH / 2 + i * 10;
-  const x = Math.sin(i * 0.15) * 30 + Math.sin(i * 0.05) * 10;
-  roadPoints.push({ x, z });
-}
+  const SEGMENT_LENGTH = 10;
+  const ROAD_SEGMENT_COUNT = MAP_LENGTH / SEGMENT_LENGTH;
+  
+  for (let i = 0; i < ROAD_SEGMENT_COUNT; i++) {
+    const z = -MAP_LENGTH / 2 + i * SEGMENT_LENGTH;
+    const x = Math.sin(i * 0.15) * 30 + Math.sin(i * 0.05) * 10;
+    roadPoints.push({ x, z });
+  }
+  
 
 for (let i = 0; i < roadPoints.length; i++) {
   const { x, z } = roadPoints[i];
@@ -173,26 +184,36 @@ for (let i = 0; i < roadPoints.length; i++) {
   scene.add(spotlight.target);
   scene.add(new THREE.AmbientLight(0x888888));
 
-  for (let i = 0; i < 40; i++) {
+
+  const TREE_COUNT = Math.floor(MAP_LENGTH * TREE_RATIO);  
+  const ROCK_COUNT = Math.floor(MAP_LENGTH * ROCK_RATIO);   
+  const COIN_COUNT = Math.floor(MAP_LENGTH * COIN_RATIO); 
+
+
+  for (let i = 0; i < TREE_COUNT; i++) {
     const tree = createTree();
-    tree.position.set(randomRoadBasedX(), 0, randomCoord(MAP_LENGTH));
+    const { x, z } = randomRoadBasedXZ(TREE_onROAD_RATIO); 
+    tree.position.set(x, 0, z);
     trees.push(tree);
     scene.add(tree);
   }
-
-  for (let i = 0; i < 20; i++) {
+  
+  for (let i = 0; i < ROCK_COUNT; i++) {
     const rock = createRock();
-    rock.position.set(randomRoadBasedX(), 0.25, randomCoord(MAP_LENGTH));
+    const { x, z } = randomRoadBasedXZ(ROCK_onROAD_RATIO); 
+    rock.position.set(x, 0.25, z);
     rocks.push(rock);
     scene.add(rock);
   }
-
-  for (let i = 0; i < 50; i++) {
+  
+  for (let i = 0; i < COIN_COUNT; i++) {
     const coin = createCoin();
-    coin.position.set(randomRoadBasedX(), 0.5, randomCoord(MAP_LENGTH));
+    const { x, z } = randomRoadBasedXZ(COIN_onROAD_RATIO); 
+    coin.position.set(x, 0.5, z);
     coins.push(coin);
     scene.add(coin);
   }
+  
 
   document.addEventListener('keydown', (e) => keys[e.key.toLowerCase()] = true);
   document.addEventListener('keyup', (e) => keys[e.key.toLowerCase()] = false);
@@ -202,7 +223,7 @@ for (let i = 0; i < roadPoints.length; i++) {
 function createCar() {
     const group = new THREE.Group();
   
-    const bodyMaterial = new THREE.MeshPhongMaterial({ color: 0xff0000, shininess: 100 });
+    const bodyMaterial = new THREE.MeshPhongMaterial({ color: 0xffbb00, shininess: 100 });
     const cabinMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff });
   
     const mainBody = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.6, 4), bodyMaterial);
@@ -263,13 +284,25 @@ function createCoin() {
   return new THREE.Mesh(new THREE.SphereGeometry(0.5, 16, 16), new THREE.MeshPhongMaterial({ color: 0xFFD700, emissive: 0xFFCC00 }));
 }
 
-function randomCoord(scale = 180) {
-  return (Math.random() - 0.5) * scale;
+function randomCoord(scale = MAP_LENGTH) {
+    return (Math.random() - 0.5) * scale;
 }
+  
 
-function randomRoadBasedX() {
-  return (Math.random() < 0.3 ? (Math.random() - 0.5) * ROAD_BOUND * 2 : randomCoord(MAP_WIDTH));
+function randomRoadBasedXZ(onRoadRatio = 0.4) {
+    const z = randomCoord(MAP_LENGTH);
+    if (Math.random() < onRoadRatio) {
+      const closest = roadPoints.reduce((prev, curr) =>
+        Math.abs(curr.z - z) < Math.abs(prev.z - z) ? curr : prev
+      );
+      const x = closest.x + (Math.random() - 0.5) * ROAD_BOUND * 2;
+      return { x, z };
+    } else {
+      return { x: randomCoord(MAP_WIDTH), z };
+    }
 }
+  
+  
 
 function onWindowResize() {
   camera.aspect = window.innerWidth / window.innerHeight;
@@ -303,7 +336,7 @@ const onRoad = Math.abs(car.position.x - closestRoad.x) < ROAD_BOUND;
 
   for (const coin of [...coins]) {
     if (car.position.distanceTo(coin.position) < 1.5) {
-      score += 10;
+      score += COIN_SCORE;
       scoreDisplay.textContent = `分數：${score}`;
       scene.remove(coin);
       coins = coins.filter(c => c !== coin);
@@ -312,11 +345,14 @@ const onRoad = Math.abs(car.position.x - closestRoad.x) < ROAD_BOUND;
 
   for (const rock of rocks) {
     if (car.position.distanceTo(rock.position) < 2.0) {
-      score -= 5;
+      score -= ROCK_SCORE;
       scoreDisplay.textContent = `分數：${score}`;
-      rock.position.set(randomRoadBasedX(), 0.25, randomCoord(MAP_LENGTH));
+      
+      const { x, z } = randomRoadBasedXZ(0.5);  
+      rock.position.set(x, 0.25, z);
     }
   }
+  
 
   for (const tree of trees) {
     if (car.position.distanceTo(tree.position) < 2.5) {
@@ -328,7 +364,11 @@ const onRoad = Math.abs(car.position.x - closestRoad.x) < ROAD_BOUND;
   if (car.position.z > END_LINE_Z) {
     finished = true;
     gameOverPanel.style.display = "flex";
-    gameOverPanel.innerHTML = `<h1>🏁 抵達終點！<br>分數：${score}</h1><button onclick='location.reload()'>重新開始</button>`;
+    if (score < 0) {
+        gameOverPanel.innerHTML = `<h1>🤡 你居然負分！？<br>分數：${score}</h1><p style='font-size: 0.7em;'>（撞石頭撞出新紀錄）</p><button onclick='location.reload()'>重新開始</button>`;
+    } else {
+        gameOverPanel.innerHTML = `<h1>🏁 抵達終點！<br>分數：${score}</h1><button onclick='location.reload()'>重新開始</button>`;
+    }
   }
 
   renderer.render(scene, camera);
@@ -338,8 +378,8 @@ function endGame() {
   gameOver = true;
   gameOverPanel.style.display = "flex";
   if (score < 0) {
-    gameOverPanel.innerHTML = `<h1>🤡 你居然負分！？<br>分數：${score}</h1><p style='font-size: 0.7em;'>（撞樹撞石頭撞出新紀錄）</p><button onclick='location.reload()'>重新開始</button>`;
+    gameOverPanel.innerHTML = `<h1>🤡 不只撞樹還負分！？<br>分數：${score}</h1><p style='font-size: 0.7em;'>（撞樹撞石頭撞出新紀錄）</p><button onclick='location.reload()'>重新開始</button>`;
   } else {
-    gameOverPanel.innerHTML = `<h1>💥 遊戲結束<br>分數：${score}</h1><button onclick='location.reload()'>重新開始</button>`;
+    gameOverPanel.innerHTML = `<h1>💥 Boom! 遊戲結束!<br>分數：${score}</h1><button onclick='location.reload()'>重新開始</button>`;
   }
 }
