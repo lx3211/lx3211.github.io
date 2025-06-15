@@ -69,7 +69,7 @@ startPanel.style.flexDirection = "column";
 startPanel.innerHTML = `<h1>🏎️ 賽車遊戲</h1><h3 style='margin: 10px 0;'>使用方向鍵操作</h3><p style="font-size: 0.6em; max-width: 80%; line-height: 1.5; text-align: left;">
   🎯 遊戲目標：操控賽車穿越彎道抵達終點<br>
   🌲 撞到樹會直接結束遊戲<br>
-  💣 撞到石頭會扣 ${ROCK_SCORE} 分並重新生成位置<br>
+  💣 撞到石頭會扣 ${ROCK_SCORE} 分<br>
   💰 吃到金幣可獲得 ${COIN_SCORE} 分<br>
   🛣️ 開出柏油路速度會降低<br>
   🚨 開太慢或逆向會被扣分ㄛ
