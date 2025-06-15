@@ -72,7 +72,7 @@ startPanel.innerHTML = `<h1>🏎️ 賽車遊戲</h1><h3 style='margin: 10px 0;'
   💣 撞到石頭會扣 ${ROCK_SCORE} 分並重新生成位置<br>
   💰 吃到金幣可獲得 ${COIN_SCORE} 分<br>
   🛣️ 開出柏油路速度會降低<br>
-  🚨 開太慢會被扣分ㄛ
+  🚨 開太慢或逆向會被扣分ㄛ
 </p><button id='start-button' style='font-size: 1em; padding: 10px 20px; cursor: pointer;'>開始遊戲</button>`;startPanel.style.fontSize = "2em";
 startPanel.style.textAlign = "center";
 document.body.appendChild(startPanel);
