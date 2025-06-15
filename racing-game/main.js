@@ -410,7 +410,8 @@ const onRoad = Math.abs(car.position.x - closestRoad.x) < ROAD_BOUND;
   if (now - lastSpeedCheck >= speedCheckInterval) {
     if (now - gameStartTime > gracePeriod) {  // 確保已過緩衝期
       const dz = car.position.z - (lastZ ?? car.position.z);
-      const forwardSpeed = Math.abs(dz);
+      const forwardSpeed = dz;
+    //   const forwardSpeed = Math.abs(dz);
       if (forwardSpeed < 25) {
         score -= SLOW_SPEED_PENALTY; 
         scoreDisplay.textContent = `分數：${score}`;
