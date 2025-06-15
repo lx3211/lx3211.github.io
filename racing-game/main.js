@@ -382,6 +382,10 @@ const onRoad = Math.abs(car.position.x - closestRoad.x) < ROAD_BOUND;
     car.position.x -= Math.sin(angle) * speed;
     car.position.z -= Math.cos(angle) * speed;
   }
+  if (keys['arrowdown']) {
+    car.position.x += Math.sin(angle) * speed * 0.6; // 倒車速度略慢
+    car.position.z += Math.cos(angle) * speed * 0.6;
+  }
 
   car.rotation.y = angle;
   camera.position.x = car.position.x + Math.sin(angle) * 10;
