@@ -394,7 +394,7 @@ const onRoad = Math.abs(car.position.x - closestRoad.x) < ROAD_BOUND;
   camera.lookAt(car.position);
 
   for (const coin of [...coins]) {
-    if (car.position.distanceTo(coin.position) < 1.5) {
+    if (car.position.distanceTo(coin.position) < 2.5) {
       score += COIN_SCORE;
       scoreDisplay.textContent = `分數：${score}`;
       scene.remove(coin);
@@ -414,7 +414,7 @@ const onRoad = Math.abs(car.position.x - closestRoad.x) < ROAD_BOUND;
   
 
   for (const tree of trees) {
-    if (car.position.distanceTo(tree.position) < 2.5) {
+    if (car.position.distanceTo(tree.position) < 1.5) {
       endGame();
       break;
     }
