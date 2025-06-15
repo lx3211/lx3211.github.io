@@ -22,7 +22,16 @@ const TREE_onROAD_RATIO = 0.6; // 60% 機率在道路上
 const ROCK_onROAD_RATIO = 0.5; // 50% 機率在道路上
 const COIN_onROAD_RATIO = 0.7; // 70% 機率在道路上
 const COIN_SCORE = 10;
-const ROCK_SCORE = 30;
+const ROCK_SCORE = 20;
+const SLOW_SPEED_PENALTY = 10; // 開太慢扣 10 分
+
+const speedCheckInterval = 1000;  // 每 2 秒檢查一次
+const gracePeriod = 5000;         // 前 5 秒不扣分
+let lastSpeedCheck = 0;
+let lastZ = null;
+const gameStartTime = Date.now(); // 紀錄開始時間
+
+
 
 const scoreDisplay = document.getElementById("score");
 const gameOverPanel = document.createElement("div");
@@ -62,10 +71,26 @@ startPanel.innerHTML = `<h1>🏎️ 賽車遊戲</h1><h3 style='margin: 10px 0;'
   🌲 撞到樹會直接結束遊戲<br>
   💣 撞到石頭會扣 ${ROCK_SCORE} 分並重新生成位置<br>
   💰 吃到金幣可獲得 ${COIN_SCORE} 分<br>
-  🛣️ 開出柏油路速度會降低
+  🛣️ 開出柏油路速度會降低<br>
+  🚨 開太慢會被扣分ㄛ
 </p><button id='start-button' style='font-size: 1em; padding: 10px 20px; cursor: pointer;'>開始遊戲</button>`;startPanel.style.fontSize = "2em";
 startPanel.style.textAlign = "center";
 document.body.appendChild(startPanel);
+
+const notice = document.createElement("div");
+notice.style.position = "absolute";
+notice.style.top = "10px";
+notice.style.left = "50%";
+notice.style.transform = "translateX(-50%)";
+notice.style.background = "rgba(255,0,0,0.8)";
+notice.style.color = "white";
+notice.style.padding = "10px 20px";
+notice.style.borderRadius = "8px";
+notice.style.fontWeight = "bold";
+notice.style.fontSize = "1.2em";
+notice.style.zIndex = 15;
+notice.style.display = "none";
+document.body.appendChild(notice);
 
 document.getElementById('start-button').onclick = () => {
   startPanel.remove();
@@ -284,6 +309,14 @@ function createCoin() {
   return new THREE.Mesh(new THREE.SphereGeometry(0.5, 16, 16), new THREE.MeshPhongMaterial({ color: 0xFFD700, emissive: 0xFFCC00 }));
 }
 
+function showNotice(text, duration = 1500) {
+    notice.textContent = text;
+    notice.style.display = "block";
+    setTimeout(() => {
+      notice.style.display = "none";
+    }, duration);
+}
+  
 function randomCoord(scale = MAP_LENGTH) {
     return (Math.random() - 0.5) * scale;
 }
@@ -372,6 +405,23 @@ const onRoad = Math.abs(car.position.x - closestRoad.x) < ROAD_BOUND;
   }
 
   renderer.render(scene, camera);
+
+  const now = Date.now();
+  if (now - lastSpeedCheck >= speedCheckInterval) {
+    if (now - gameStartTime > gracePeriod) {  // 確保已過緩衝期
+      const dz = car.position.z - (lastZ ?? car.position.z);
+      const forwardSpeed = Math.abs(dz);
+      if (forwardSpeed < 25) {
+        score -= SLOW_SPEED_PENALTY; 
+        scoreDisplay.textContent = `分數：${score}`;
+        showNotice(`🚨 你開太慢了！扣 ${SLOW_SPEED_PENALTY} 分`);
+
+      }
+      lastZ = car.position.z;
+    }
+    lastSpeedCheck = now;
+  }
+  
 }
 
 function endGame() {
