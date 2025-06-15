@@ -26,10 +26,10 @@ const ROCK_SCORE = 20;
 const SLOW_SPEED_PENALTY = 10; // 開太慢扣 10 分
 
 const speedCheckInterval = 1000;  // 每 2 秒檢查一次
-const gracePeriod = 5000;         // 前 5 秒不扣分
+const gracePeriod = 3000;         // 前 5 秒不扣分
 let lastSpeedCheck = 0;
 let lastZ = null;
-const gameStartTime = Date.now(); // 紀錄開始時間
+// const gameStartTime = Date.now(); // 紀錄開始時間
 
 
 
@@ -92,9 +92,12 @@ notice.style.zIndex = 15;
 notice.style.display = "none";
 document.body.appendChild(notice);
 
+let gameStartTime; // 全域變數
+
 document.getElementById('start-button').onclick = () => {
   startPanel.remove();
   started = true;
+  gameStartTime = Date.now();  // ✅ 按下按鈕那一刻紀錄時間
   init();
   animate();
 };
@@ -216,8 +219,15 @@ for (let i = 0; i < roadPoints.length; i++) {
 
 
   for (let i = 0; i < TREE_COUNT; i++) {
+    
     const tree = createTree();
     const { x, z } = randomRoadBasedXZ(TREE_onROAD_RATIO); 
+    const carStartX = 0;
+    const carStartZ = -MAP_LENGTH / 2 + 10;
+    const dx = x - carStartX;
+    const dz = z - carStartZ;
+    const dist = Math.sqrt(dx * dx + dz * dz);
+    if (dist < 5) continue; // 避免太靠近賽車
     tree.position.set(x, 0, z);
     trees.push(tree);
     scene.add(tree);
@@ -226,6 +236,12 @@ for (let i = 0; i < roadPoints.length; i++) {
   for (let i = 0; i < ROCK_COUNT; i++) {
     const rock = createRock();
     const { x, z } = randomRoadBasedXZ(ROCK_onROAD_RATIO); 
+    const carStartX = 0;
+    const carStartZ = -MAP_LENGTH / 2 + 10;
+    const dx = x - carStartX;
+    const dz = z - carStartZ;
+    const dist = Math.sqrt(dx * dx + dz * dz);
+    if (dist < 5) continue; // 避免太靠近賽車
     rock.position.set(x, 0.25, z);
     rocks.push(rock);
     scene.add(rock);
@@ -234,6 +250,12 @@ for (let i = 0; i < roadPoints.length; i++) {
   for (let i = 0; i < COIN_COUNT; i++) {
     const coin = createCoin();
     const { x, z } = randomRoadBasedXZ(COIN_onROAD_RATIO); 
+    const carStartX = 0;
+    const carStartZ = -MAP_LENGTH / 2 + 10;
+    const dx = x - carStartX;
+    const dz = z - carStartZ;
+    const dist = Math.sqrt(dx * dx + dz * dz);
+    if (dist < 5) continue; // 避免太靠近賽車
     coin.position.set(x, 0.5, z);
     coins.push(coin);
     scene.add(coin);
