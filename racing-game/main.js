@@ -15,9 +15,9 @@ const ROAD_BOUND = 20;
 const MAP_WIDTH = 200;
 const MAP_LENGTH = 1000;
 const END_LINE_Z = MAP_LENGTH / 2 - 5;
-const TREE_RATIO = 0.10; // 每 100 長度放 7 棵樹
+const TREE_RATIO = 0.10; // 每 100 長度放 10 棵樹
 const ROCK_RATIO = 0.05; // 每 100 長度放 5 顆石頭
-const COIN_RATIO = 0.2; // 每 100 長度放 10 枚金幣
+const COIN_RATIO = 0.20; // 每 100 長度放 20 枚金幣
 const TREE_onROAD_RATIO = 0.6; // 60% 機率在道路上
 const ROCK_onROAD_RATIO = 0.5; // 50% 機率在道路上
 const COIN_onROAD_RATIO = 0.7; // 70% 機率在道路上
@@ -374,7 +374,7 @@ function animate() {
     Math.abs(curr.z - car.position.z) < Math.abs(prev.z - car.position.z) ? curr : prev
 );
 const onRoad = Math.abs(car.position.x - closestRoad.x) < ROAD_BOUND;
-  const speed = onRoad ? baseSpeed : baseSpeed * 0.4;
+  const speed = onRoad ? baseSpeed : baseSpeed * 0.1;
 
   if (keys['arrowleft']) angle += 0.08;
   if (keys['arrowright']) angle -= 0.08;
